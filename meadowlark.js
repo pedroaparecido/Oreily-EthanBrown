@@ -3,13 +3,34 @@ const fortune = require('./lib/fortune')
 const express = require('express')
 const app = express()
 const expressHandlebars = require('express-handlebars')
+const bodyParser = require('body-parser')
 const port = process.env.PORT || 3000
+
+app.use(bodyParser.urlencoded({ exteended: true }))
+app.use(bodyParser.json())
 
 // configura o view engine Handlebars
 app.engine('handlebars', expressHandlebars.engine({
-    defaultLayout: 'main'
+    defaultLayout: 'main',
+    helpers: {
+        section: function (name, options) {
+            if (!this._sections) this._sections = {}
+            this._sections[name] = options.fn(this)
+            return null
+        }
+    }
 }))
 app.set('view engine', 'handlebars')
+
+app.get('/newsletter', handlers.newsletter)
+
+app.post('/newsletter-signup', handlers.api.newsletterSignup)
+
+app.post('api/newsletter-signup', handlers.newsletterSignup)
+
+app.post('/newsletter-signup/process', handlers.newsletterSignupProcess)
+
+app.get('/newsletter-signup/thank-you', handlers.newsletterSignupThankYou)
 
 app.get('/', handlers.home)
 
